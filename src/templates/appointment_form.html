@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Novo Agendamento</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 2rem;
+            background: #f7f7f7;
+        }
+        .container {
+            background: #fff;
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            max-width: 600px;
+            margin: auto;
+        }
+        h1 {
+            text-align: center;
+        }
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+        label {
+            font-weight: bold;
+        }
+        input, select, button {
+            padding: 0.5rem;
+            border-radius: 8px;
+            border: 1px solid #ccc;
+            font-size: 1rem;
+        }
+        .days {
+            display: flex;
+            gap: 0.5rem;
+            overflow-x: auto;
+            padding-bottom: 0.5rem;
+        }
+        .day-card {
+            flex: 0 0 auto;
+            background: #eee;
+            border-radius: 10px;
+            padding: 0.8rem;
+            text-align: center;
+            cursor: pointer;
+            min-width: 90px;
+            transition: 0.2s;
+        }
+        .day-card.selected {
+            background: #007bff;
+            color: #fff;
+            font-weight: bold;
+        }
+        .hours {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 0.5rem;
+        }
+        .hour-card {
+            background: #eee;
+            border-radius: 8px;
+            padding: 0.6rem;
+            text-align: center;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .hour-card.selected {
+            background: #007bff;
+            color: #fff;
+            font-weight: bold;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Novo Agendamento</h1>
+
+        <form action="/appointments/new" method="POST">
+            <label for="customer_name">Nome do Cliente:</label>
+            <input type="text" name="customer_name" id="customer_name" required>
+
+            <label for="customer_phone">Telefone:</label>
+            <input type="text" name="customer_phone" id="customer_phone" required>
+
+            <label for="vehicle_plate">Placa do Veículo:</label>
+            <input type="text" name="vehicle_plate" id="vehicle_plate" required>
+
+            <label for="vehicle_type">Tipo do Veículo:</label>
+            <select name="vehicle_type" id="vehicle_type" required>
+                <option value="">Selecione...</option>
+                <option value="Moto">Moto - R$ 25,00</option>
+                <option value="Hatch">Hatch - R$ 40,00</option>
+                <option value="Sedan">Sedan - R$ 50,00</option>
+                <option value="SUV">SUV - R$ 65,00</option>
+                <option value="Picape">Picape - R$ 80,00</option>
+            </select>
+
+            <label>Selecione a Data:</label>
+            <div class="days" id="daysContainer"></div>
+
+            <label>Selecione o Horário:</label>
+            <div class="hours" id="hoursContainer"></div>
+
+            <input type="hidden" name="date_time" id="dateTimeInput">
+
+            <button type="submit">Agendar</button>
+        </form>
+    </div>
+
+    <script>
+        const daysContainer = document.getElementById('daysContainer');
+        const hoursContainer = document.getElementById('hoursContainer');
+        const dateTimeInput = document.getElementById('dateTimeInput');
+        
+        let selectedDate = '';
+        let selectedTime = '';
+
+        // Gera próximos 7 dias úteis (sem sábado/domingo)
+        function getNextWeekdays(count = 7) {
+            const days = [];
+            let current = new Date();
+            while (days.length < count) {
+                current.setDate(current.getDate() + 1);
+                const day = current.getDay();
+                if (day !== 0 && day !== 6) {
+                    days.push(new Date(current));
+                }
+            }
+            return days;
+        }
+
+        // Renderiza os dias como cards
+        const weekdays = getNextWeekdays();
+        weekdays.forEach((d, i) => {
+            const card = document.createElement('div');
+            card.classList.add('day-card');
+            card.textContent = d.toLocaleDateString('pt-BR', { weekday: 'short', day: '2-digit', month: '2-digit' });
+            card.addEventListener('click', () => selectDay(card, d));
+            daysContainer.appendChild(card);
+            if (i === 0) selectDay(card, d); // Seleciona o primeiro por padrão
+        });
+
+        // Renderiza horários fixos
+        function renderHours(occupiedTimes = []) {
+            hoursContainer.innerHTML = '';
+            for (let hour = 8; hour <= 18; hour++) {
+                const time = `${String(hour).padStart(2, '0')}:00`;
+                const card = document.createElement('div');
+                card.classList.add('hour-card');
+                card.textContent = time;
+
+                if (occupiedTimes.includes(time)) {
+                    card.style.background = '#ccc';
+                    card.style.cursor = 'not-allowed';
+                    card.style.textDecoration = 'line-through';
+                } else {
+                    card.addEventListener('click', () => selectHour(card, time));
+                }
+
+                hoursContainer.appendChild(card);
+            }
+        }
+
+        async function selectDay(card, date) {
+            document.querySelectorAll('.day-card').forEach(c => c.classList.remove('selected'));
+            card.classList.add('selected');
+            selectedDate = date.toISOString().split('T')[0];
+
+            console.log('📅 Data selecionada:', selectedDate);
+
+            // Busca horários ocupados do backend
+            try {
+                const res = await fetch(`/appointments/occupied/${selectedDate}`);
+                const occupiedTimes = await res.json();
+                console.log('🕐 Horários ocupados:', occupiedTimes);
+                renderHours(occupiedTimes);
+            } catch (err) {
+                console.error("Erro ao buscar horários:", err);
+                renderHours();
+            }
+        }
+
+        function selectHour(card, time) {
+            document.querySelectorAll('.hour-card').forEach(c => c.classList.remove('selected'));
+            card.classList.add('selected');
+            selectedTime = time;
+            console.log('🕐 Horário selecionado:', selectedTime);
+        }
+
+        // Validação no submit
+        const form = document.querySelector('form');
+        form.addEventListener('submit', (e) => {
+            if (!selectedDate || !selectedTime) {
+                e.preventDefault();
+                alert('Selecione data e horário!');
+                return;
+            }
+            dateTimeInput.value = `${selectedDate}T${selectedTime}`;
+            console.log('✅ Enviando:', dateTimeInput.value);
+        });
+    </script>
+
+</body>
+</html>

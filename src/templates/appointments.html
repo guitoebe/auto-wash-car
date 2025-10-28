@@ -3,27 +3,25 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Customers</title>
+    <title>Appointments</title>
 </head>
 <body>
-    <h1>Customer List</h1>
+    <h1>Appointments List</h1>
     <table border="1">
         <thead>
             <tr>
-                <th>Name</th>
-                <th>Phone</th>
+                <th>Client</th>
+                <th>Date</th>
             </tr>
         </thead>
         <tbody>
-            {% for customer in customers %}
+            {% for appointment in appointments %}
             <tr>
-                <td>{{ customer.name }}</td>
-                <td>{{ customer.phone }}</td>
+                <td>{{ appointment.customer_id }}</td>
+                <td>{{ appointment.date_time }}</td>
             </tr>
             {% endfor %}
         </tbody>
     </table>
-    <br>
-    <a href="/customers/new">Add New Customer</a>
 </body>
 </html>

@@ -1,5 +1,7 @@
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
+import logging
+
 
 # Initialize SQLAlchemy
 db = SQLAlchemy()
@@ -15,8 +17,19 @@ def create_app():
     # Initialize extensions
     db.init_app(app)
 
-    # Register blueprints
-    from src.routes.customer_routes import customer_bp
+     # Importa modelos após inicializar o db
+    from src.models import Customer, Vehicle, Appointment
+    from src.routes import appointment_bp, customer_bp
+
+    # Registra blueprint
+    
     app.register_blueprint(customer_bp)
+
+    app.register_blueprint(appointment_bp)
+    
+    logging.debug('testee')
+
+    with app.app_context():
+        db.create_all()
 
     return app

@@ -13,9 +13,8 @@ def get_customers():
 def create_customer():
     if request.method == 'POST':
         name = request.form['name']
-        email = request.form['email']
         phone = request.form['phone']
-        new_customer = Customer(name=name, email=email, phone=phone)
+        new_customer = Customer(name=name, phone=phone)
         db.session.add(new_customer)
         db.session.commit()
         return redirect(url_for('customer.get_customers'))
