@@ -94,10 +94,10 @@
             <input type="text" name="customer_name" id="customer_name" required>
 
             <label for="customer_phone">Telefone:</label>
-            <input type="text" name="customer_phone" id="customer_phone" required>
+            <input type="text" name="customer_phone" id="customer_phone" required placeholder="(00) 00000-0000">
 
             <label for="vehicle_plate">Placa do Veículo:</label>
-            <input type="text" name="vehicle_plate" id="vehicle_plate" required>
+            <input type="text" name="vehicle_plate" id="vehicle_plate" required placeholder="ABC-1D23">
 
             <label for="vehicle_type">Tipo do Veículo:</label>
             <select name="vehicle_type" id="vehicle_type" required>
@@ -121,13 +121,22 @@
         </form>
     </div>
 
+    <!-- Biblioteca de Máscaras -->
+    <script src="https://unpkg.com/vanilla-masker/build/vanilla-masker.min.js"></script>
+
     <script>
         const daysContainer = document.getElementById('daysContainer');
         const hoursContainer = document.getElementById('hoursContainer');
         const dateTimeInput = document.getElementById('dateTimeInput');
+        const phoneInput = document.getElementById('customer_phone');
+        const plateInput = document.getElementById('vehicle_plate');
         
         let selectedDate = '';
         let selectedTime = '';
+
+        // Aplica máscaras
+        if (phoneInput) VMasker(phoneInput).maskPattern('(99) 99999-9999');
+        if (plateInput) VMasker(plateInput).maskPattern('AAA-9A99');
 
         // Gera próximos 7 dias úteis (sem sábado/domingo)
         function getNextWeekdays(count = 7) {
@@ -182,7 +191,6 @@
 
             console.log('📅 Data selecionada:', selectedDate);
 
-            // Busca horários ocupados do backend
             try {
                 const res = await fetch(`/appointments/occupied/${selectedDate}`);
                 const occupiedTimes = await res.json();
@@ -201,7 +209,7 @@
             console.log('🕐 Horário selecionado:', selectedTime);
         }
 
-        // Validação no submit
+        // Validação antes do envio
         const form = document.querySelector('form');
         form.addEventListener('submit', (e) => {
             if (!selectedDate || !selectedTime) {

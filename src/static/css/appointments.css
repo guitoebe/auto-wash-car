@@ -1,0 +1,162 @@
+/* appointments.css - estilos para a página de agendamentos */
+
+/* Reset simples */
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  font-family: "Inter", "Segoe UI", Roboto, Arial, sans-serif;
+  background: #f5f7fb;
+  color: #222;
+  -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing:grayscale;
+}
+
+/* Layout container */
+.container {
+  max-width: 1100px;
+  margin: 1.5rem auto;
+  padding: 0 1rem;
+}
+
+/* Topbar */
+.topbar {
+  background: linear-gradient(180deg,#0b74d1,#0a66c7);
+  color: #fff;
+  padding: 1rem 0.25rem;
+  box-shadow: 0 4px 18px rgba(10,102,199,0.15);
+}
+.topbar .container {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  justify-content: space-between;
+}
+.topbar h1 {
+  margin: 0;
+  font-size: 1.25rem;
+}
+.topbar nav {
+  display: flex;
+  gap: 0.5rem;
+}
+.btn {
+  background: #fff;
+  color: #0a66c7;
+  padding: 0.45rem 0.8rem;
+  border-radius: 8px;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 0.95rem;
+  box-shadow: 0 2px 8px rgba(10,102,199,0.12);
+}
+.btn:hover { transform: translateY(-1px); }
+.btn-secondary {
+  background: transparent;
+  color: rgba(255,255,255,0.95);
+  border: 1px solid rgba(255,255,255,0.12);
+  box-shadow: none;
+}
+
+/* Card */
+.card {
+  background: #fff;
+  border-radius: 12px;
+  padding: 1rem;
+  box-shadow: 0 8px 28px rgba(20,30,40,0.06);
+  margin-top: 1.25rem;
+}
+.card-header h2 {
+  margin: 0;
+  font-size: 1.1rem;
+}
+.card-header .muted {
+  margin: 0.25rem 0 0;
+  color: #6b7280;
+  font-size: 0.9rem;
+}
+
+/* Flash messages */
+.messages { margin-bottom: 1rem; }
+.flash {
+  padding: 0.7rem 1rem;
+  border-radius: 8px;
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+}
+.flash-success { background:#e6f8ef; color:#0f7a4a; border: 1px solid #c8efd9; }
+.flash-danger  { background:#fdecea; color:#9b2a2b; border: 1px solid #f5c7c6; }
+.flash-warning { background:#fff7e6; color:#7a5a00; border: 1px solid #ffe6b8; }
+
+/* Table */
+.table-wrap { overflow-x:auto; margin-top: 0.75rem; }
+.appointments-table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 720px;
+}
+.appointments-table thead th {
+  text-align: left;
+  padding: 0.8rem 0.9rem;
+  background: #0a66c7;
+  color: white;
+  font-weight: 700;
+  font-size: 0.9rem;
+  position: sticky;
+  top: 0;
+}
+.appointments-table tbody td {
+  padding: 0.85rem 0.9rem;
+  border-bottom: 1px solid #eef2f7;
+  vertical-align: middle;
+  font-size: 0.95rem;
+  color: #111827;
+}
+.appointments-table tbody tr:hover {
+  background: #fbfdff;
+}
+
+/* Empty state */
+.empty {
+  padding: 2rem;
+  text-align: center;
+  color: #5b6170;
+}
+.empty .btn { margin-top: 1rem; }
+
+/* Footer */
+.footer {
+  margin: 2rem 0 3rem;
+  text-align: center;
+  color: #7a8596;
+  font-size: 0.9rem;
+}
+
+/* Responsive: tabela vira bloco em telas pequenas */
+@media (max-width: 720px) {
+  .topbar .container { flex-direction: column; align-items: flex-start; gap: 0.75rem; }
+  .appointments-table {
+    min-width: 0;
+    border: 0;
+  }
+  .appointments-table thead { display: none; }
+  .appointments-table tbody td {
+    display: block;
+    width: 100%;
+    padding: 0.7rem 0.9rem;
+    border-bottom: 1px solid #eef2f7;
+  }
+  .appointments-table tbody tr {
+    margin-bottom: 0.5rem;
+    background: #fff;
+    border-radius: 10px;
+    box-shadow: 0 6px 18px rgba(12,18,28,0.04);
+  }
+  .appointments-table tbody td::before {
+    content: attr(data-label);
+    display: block;
+    font-weight: 700;
+    color: #374151;
+    margin-bottom: 0.35rem;
+    font-size: 0.85rem;
+  }
+}

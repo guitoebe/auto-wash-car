@@ -1,27 +1,83 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt-br">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Appointments</title>
+    <meta charset="utf-8">
+    <title>Agendamentos</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/appointments.css') }}">
 </head>
 <body>
-    <h1>Appointments List</h1>
-    <table border="1">
-        <thead>
-            <tr>
-                <th>Client</th>
-                <th>Date</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for appointment in appointments %}
-            <tr>
-                <td>{{ appointment.customer_id }}</td>
-                <td>{{ appointment.date_time }}</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+    <header class="topbar">
+        <div class="container">
+            <h1>🗓 Agendamentos</h1>
+            <nav>
+                <a class="btn" href="{{ url_for('appointments.schedule_appointment') }}">Novo Agendamento</a>
+                <a class="btn btn-secondary" href="{{ url_for('vehicles.list_vehicles') }}">Veículos</a>
+                <a class="btn btn-secondary" href="{{ url_for('customer.get_customers') }}">Clientes</a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="container">
+        <!-- Flash messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+            <div class="messages">
+              {% for category, message in messages %}
+                <div class="flash flash-{{ category }}">{{ message }}</div>
+              {% endfor %}
+            </div>
+          {% endif %}
+        {% endwith %}
+
+        <section class="card">
+            <div class="card-header">
+                <h2>Lista de Agendamentos</h2>
+                <p class="muted">Visualize e gerencie os agendamentos feitos</p>
+            </div>
+
+            <div class="card-body">
+                {% if appointments %}
+                <div class="table-wrap">
+                    <table class="appointments-table" aria-describedby="Lista de agendamentos">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Data / Hora</th>
+                                <th>Cliente</th>
+                                <th>Telefone</th>
+                                <th>Placa</th>
+                                <th>Tipo</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for a in appointments %}
+                            <tr>
+                                <td data-label="ID">{{ a.id }}</td>
+                                <td data-label="Data / Hora">{{ a.date_time.strftime('%d/%m/%Y %H:%M') }}</td>
+                                <td data-label="Cliente">{{ a.customer.name if a.customer else '—' }}</td>
+                                <td data-label="Telefone">{{ a.customer.phone if a.customer else '—' }}</td>
+                                <td data-label="Placa">{{ a.vehicle.plate if a.vehicle else '—' }}</td>
+                                <td data-label="Tipo">{{ a.vehicle.type if a.vehicle else '—' }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                    <div class="empty">
+                        <p>Nenhum agendamento encontrado.</p>
+                        <a class="btn" href="{{ url_for('appointments.schedule_appointment') }}">Criar primeiro agendamento</a>
+                    </div>
+                {% endif %}
+            </div>
+        </section>
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+            <small>Auto Wash Car — painel de agendamentos</small>
+        </div>
+    </footer>
 </body>
 </html>
