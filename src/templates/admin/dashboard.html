@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Painel Administrativo — Calendário</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
+</head>
+<body>
+
+<div class="admin-header d-flex justify-content-between align-items-center">
+    <div>
+        <button id="prevDay" class="btn btn-outline-secondary btn-sm">Anterior</button>
+        <button id="todayBtn" class="btn btn-outline-secondary btn-sm">Hoje</button>
+        <button id="nextDay" class="btn btn-outline-secondary btn-sm">Próximo</button>
+        <span class="ms-3 fw-semibold">Data: <span id="displayDate">{{ selected_date.strftime("%d/%m/%Y") }}</span></span>
+    </div>
+
+    <div>
+        <a href="{{ url_for('admin.logout') }}" class="btn btn-outline-danger btn-sm">Sair</a>
+    </div>
+</div>
+
+<div class="container mt-3">
+    <div class="admin-card p-4 bg-white">
+        <h4 class="mb-3">Horários (08:00 — 18:00)</h4>
+
+        <div class="row g-2">
+            {% for slot in timeslots %}
+            <div class="col-12 col-md-6">
+                <div class="p-3 rounded d-flex justify-content-between align-items-center
+                    {% if slot.status == 'busy' %}border border-danger bg-light{% else %}border border-success{% endif %}"
+                     data-time="{{ slot.time }}" data-status="{{ slot.status }}"
+                     data-appt-id="{{ slot.appointment.id if slot.appointment else '' }}">
+
+                    <div>
+                        <div class="fw-bold">{{ slot.time }}</div>
+                        {% if slot.status == 'busy' %}
+                            <div class="small text-danger">{{ slot.appointment.customer_name }} • {{ slot.appointment.vehicle_plate }}</div>
+                        {% else %}
+                            <div class="small text-success">Livre</div>
+                        {% endif %}
+                    </div>
+
+                    <div>
+                        {% if slot.status == 'busy' %}
+                            <a class="btn btn-sm btn-outline-primary view-appt" href="{{ url_for('admin.appointment_detail', appointment_id=slot.appointment.id) }}">Ver</a>
+                        {% else %}
+                            <a class="btn btn-primary"
+                                href="/appointments/new?date={{ selected_date.isoformat() }}&time={{ slot.time }}">
+                                    Agendar
+                            </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    const selectedDate = "{{ selected_date.isoformat() }}";
+
+    function goToDate(d) {
+        const q = new URLSearchParams(window.location.search);
+        q.set('date', d);
+        window.location.search = q.toString();
+    }
+
+    function addDays(iso, delta) {
+        const dt = new Date(iso + "T00:00:00");
+        dt.setDate(dt.getDate() + delta);
+        return dt.toISOString().slice(0,10);
+    }
+
+    document.getElementById("prevDay").addEventListener("click", () => {
+        goToDate(addDays(selectedDate, -1));
+    });
+    document.getElementById("nextDay").addEventListener("click", () => {
+        goToDate(addDays(selectedDate, 1));
+    });
+    document.getElementById("todayBtn").addEventListener("click", () => {
+        goToDate(new Date().toISOString().slice(0,10));
+    });
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,33 @@
+/* Aparência geral */
+body {
+    background: #eef1f5;
+}
+
+/* Card principal */
+.admin-card {
+    border-radius: 12px;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.06);
+}
+
+/* Botões */
+.btn-primary {
+    border-radius: 8px;
+}
+
+/* Lista de agendamentos */
+.appointment-item {
+    transition: 0.2s;
+    cursor: pointer;
+}
+
+.appointment-item:hover {
+    background-color: #f0f8ff;
+}
+
+/* Header fixo simples */
+.admin-header {
+    background: white;
+    padding: 14px 22px;
+    border-bottom: 1px solid #e5e7eb;
+    margin-bottom: 20px;
+}
