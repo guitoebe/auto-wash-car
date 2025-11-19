@@ -10,4 +10,4 @@ class Appointment(db.Model):
     vehicle_id = db.Column(db.Integer, db.ForeignKey('vehicles.id'), nullable=False)
 
     def __repr__(self):
-        return f'<Appointment {self.DateTime} - Customer {self.customer_id} - Vehicle {self.vehicle_id}>'
+        return f'<Appointment {self.date_time} - Customer {self.customer_id} - Vehicle {self.vehicle_id}>'

@@ -8,8 +8,6 @@ sys.path.insert(0, str(project_root))
 
 from src import create_app
 
-logging.debug('testee')
-
 app = create_app()
 if __name__ == '__main__':
     with app.app_context():
