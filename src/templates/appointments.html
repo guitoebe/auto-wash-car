@@ -1,82 +1,240 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-    <meta charset="UTF-8">
-    <title>Agendamentos</title>
-
-    <!-- jQuery + Mask -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.mask/1.14.16/jquery.mask.min.js"></script>
-
-    <script>
-        $(document).ready(function () {
-            $('#filter_phone').mask('(00) 00000-0000');
-
-            $("#filter_phone").on("keyup change", function () {
-                let value = $(this).val();
-                
-                $("table tbody tr").filter(function () {
-                    $(this).toggle($(this).text().indexOf(value) > -1)
-                });
-            });
-        });
-    </script>
-
+    <meta charset="utf-8">
+    <title>Buscar Agendamentos - Auto Wash Car</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/appointments.css') }}">
     <style>
-        body {
-            padding: 40px;
-            font-family: Arial;
+        /* Ajustes para o formulário de busca */
+        .search-card {
+            background: #fff;
+            padding: 18px;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+            margin-bottom: 18px;
         }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
+        .search-row {
+            display:flex;
+            gap:8px;
+            align-items:center;
+            justify-content:flex-end;
         }
-        table, td, th {
+        input[type="text"].phone-filter {
+            padding: 10px;
+            border-radius: 8px;
             border: 1px solid #ccc;
+            width: 260px;
         }
-        th {
-            background-color: #eee;
-            padding: 8px;
+        .btn { 
+            background:#007bff; 
+            color:#fff; 
+            padding:10px 14px; 
+            border-radius:8px; 
+            text-decoration:none; 
+            border:none;
+            cursor: pointer;
         }
-        td {
-            padding: 6px;
+        .btn:hover {
+            background:#0056b3;
         }
-        #filter_phone {
-            width: 250px;
-            margin-bottom: 10px;
+        .btn-success {
+            background:#28a745;
+        }
+        .btn-success:hover {
+            background:#218838;
+        }
+        .muted { 
+            color: #666; 
+            margin-top:6px; 
+        }
+        .table-wrap { 
+            overflow-x:auto; 
+        }
+        .empty { 
+            text-align:center; 
+            padding: 20px; 
+            color:#444; 
+        }
+        .highlight-phone {
+            background: #fff3cd;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+        .highlight-plate {
+            background: #d1ecf1;
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-weight: bold;
+            color: #0c5460;
+        }
+        /* mobile */
+        @media (max-width:600px){
+            .search-row { 
+                flex-direction:column; 
+                align-items:stretch; 
+            }
+            input.phone-filter { 
+                width:100%; 
+            }
         }
     </style>
 </head>
-
 <body>
+    <header class="topbar">
+        <div class="container">
+            {% if logo_url %}
+                <img src="{{ logo_url }}" alt="logo" style="height:40px; vertical-align:middle; margin-right:12px;">
+            {% endif %}
+            <h1 style="display:inline-block; vertical-align:middle; margin:0;">🔍 Buscar Agendamentos</h1>
 
-    <h1>Agendamentos</h1>
+            <nav style="float:right; margin-top:-30px;">
+                <a class="btn btn-success" href="{{ url_for('appointments.schedule_appointment') }}">➕ Novo Agendamento</a>
+            </nav>
+        </div>
+    </header>
 
-    <!-- FILTRO PELO CELULAR -->
-    <label for="filter_phone">Filtrar por celular:</label>
-    <input type="text" id="filter_phone" placeholder="(00) 00000-0000">
+    <main class="container">
 
-    <table>
-        <thead>
-            <tr>
-                <th>Celular</th>
-                <th>Horário</th>
-                <th>Placa</th>
-            </tr>
-        </thead>
+        <!-- Mensagens -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+            <div class="messages">
+              {% for category, message in messages %}
+                <div class="flash flash-{{ category }}">{{ message }}</div>
+              {% endfor %}
+            </div>
+          {% endif %}
+        {% endwith %}
 
-        <tbody>
-            {% for ap in appointments %}
-            <tr>
-                <td>{{ ap.phone }}</td>
-                <td>{{ ap.time }}</td>
-                <td>{{ ap.vehicle_plate }}</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+        <!-- CARD DE BUSCA: sempre visível -->
+        <section class="card search-card">
+            <div class="card-header">
+                <h2>📱 Buscar por Telefone</h2>
+                <p class="muted">Digite o número do celular (com DDD) para localizar todos os agendamentos associados.</p>
+            </div>
 
+            <div class="card-body">
+                <form method="GET" action="{{ url_for('appointments.dashboard') }}">
+                    <div class="search-row">
+                        <input
+                            type="text"
+                            id="phone"
+                            name="phone"
+                            class="phone-filter"
+                            placeholder="(99) 99999-9999"
+                            maxlength="15"
+                            required
+                            value="{{ phone_searched or '' }}"
+                            aria-label="Celular"
+                        >
+                        <button class="btn" type="submit">🔎 Buscar</button>
+                    </div>
+                </form>
+            </div>
+        </section>
+
+        <!-- A TABELA APARECE SOMENTE SE O USUÁRIO JÁ BUSCOU PELO TELEFONE -->
+        {% if phone_searched %}
+            <section class="card">
+                <div class="card-header">
+                    <h2>📋 Resultado da Busca</h2>
+                    <p class="muted">
+                        Telefone pesquisado: <span class="highlight-phone">{{ phone_searched }}</span>
+                        {% if appointments %}
+                            — <strong>{{ appointments|length }} agendamento(s) encontrado(s)</strong>
+                        {% endif %}
+                    </p>
+                </div>
+
+                <div class="card-body">
+                    {% if appointments %}
+                    <div class="table-wrap">
+                        <table class="appointments-table" aria-describedby="Lista de agendamentos">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Telefone</th>
+                                    <th>Cliente</th>
+                                    <th>Placa</th>
+                                    <th>Modelo/Tipo</th>
+                                    <th>Data</th>
+                                    <th>Horário</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for a in appointments %}
+                                <tr>
+                                    <td data-label="ID">{{ a.id }}</td>
+                                    <td data-label="Telefone">
+                                        <span class="highlight-phone">
+                                            {{ a.customer.phone if a.customer else '—' }}
+                                        </span>
+                                    </td>
+                                    <td data-label="Cliente">
+                                        {{ a.customer.name if a.customer else '—' }}
+                                    </td>
+                                    <td data-label="Placa">
+                                        <span class="highlight-plate">
+                                            {{ a.vehicle.plate if a.vehicle else '—' }}
+                                        </span>
+                                    </td>
+                                    <td data-label="Modelo/Tipo">
+                                        {{ a.vehicle.model if a.vehicle and a.vehicle.model else a.vehicle.type if a.vehicle else '—' }}
+                                    </td>
+                                    <td data-label="Data">{{ a.date_time.strftime('%d/%m/%Y') }}</td>
+                                    <td data-label="Horário">{{ a.date_time.strftime('%H:%M') }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                        <div class="empty">
+                            <p>❌ Nenhum agendamento encontrado para o telefone <strong>{{ phone_searched }}</strong></p>
+                            <p class="muted">Verifique se o número está correto ou tente novamente.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </section>
+        {% endif %}
+
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+            <small>Auto Wash Car — sistema de agendamentos</small>
+        </div>
+    </footer>
+
+    <!-- Máscara de celular (vanilla JS) -->
+    <script>
+    (function(){
+        const input = document.getElementById('phone');
+        if (!input) return;
+
+        function mascaraCelular(ev){
+            let v = ev.target.value.replace(/\D/g,'');
+            if (v.length > 11) v = v.slice(0,11);
+
+            if (v.length <= 10) {
+                // (99) 9999-9999
+                ev.target.value = v
+                    .replace(/(\d{2})(\d)/, '($1) $2')
+                    .replace(/(\d{4})(\d)/, '$1-$2');
+            } else {
+                // (99) 99999-9999
+                ev.target.value = v
+                    .replace(/(\d{2})(\d)/, '($1) $2')
+                    .replace(/(\d{5})(\d)/, '$1-$2');
+            }
+        }
+
+        input.addEventListener('input', mascaraCelular);
+        // inicializa se já houver valor
+        if (input.value) input.dispatchEvent(new Event('input'));
+    })();
+    </script>
 </body>
 </html>
-    
