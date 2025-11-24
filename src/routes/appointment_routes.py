@@ -15,12 +15,9 @@ def dashboard():
     filtered_appointments = None
     
     if phone:
-        # Remove formatação do telefone
-        phone_clean = phone.replace("(", "").replace(")", "").replace("-", "").replace(" ", "")
-        
-        # Busca por telefone
+       
         filtered_appointments = Appointment.query.join(Customer).filter(
-            Customer.phone.like(f"%{phone_clean}%")
+            Customer.phone.like(f"%{phone}%")
         ).order_by(Appointment.date_time.desc()).all()
         
         if not filtered_appointments:
